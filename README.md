@@ -18,6 +18,16 @@
   <img src="https://img.shields.io/badge/License-MIT-a855f7?style=for-the-badge" alt="MIT License" />
 </p>
 
+<p align="center">
+  <a href="https://emocare-web.web.app" target="_blank">
+    <img src="https://img.shields.io/badge/LIVE%20DEMO-emocare--web.web.app-10b981?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Web App" />
+  </a>
+</p>
+
+<p align="center">
+  🌐 <strong>Live URL:</strong> <a href="https://emocare-web.web.app" target="_blank"><strong>https://emocare-web.web.app</strong></a>
+</p>
+
 ---
 
 ## 📱 Mobile-First UI Architecture
@@ -90,6 +100,10 @@ firebase emulators:start --only hosting
 ---
 
 ## 🌐 Deploy to Firebase Hosting
+
+### 🔗 Live Production URLs
+- **Primary Live URL**: [https://emocare-web.web.app](https://emocare-web.web.app)
+- **Firebase App Domain**: [https://emocare-web.firebaseapp.com](https://emocare-web.firebaseapp.com)
 
 Deploying EMOCare to Firebase Hosting takes seconds:
 
