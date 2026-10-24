@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#070a12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>EMOCare — Mobile AI Emotion Telemetry</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Core Theme Variables ── */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    :root {
+      --bg-dark: #070a12;
+      --bg-card: rgba(15, 22, 38, 0.78);
+      --bg-card-subtle: rgba(255, 255, 255, 0.04);
+      --bg-glass: rgba(18, 26, 44, 0.65);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.4);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --cyan: #06b6d4;
+
+      /* Dynamic Emotion Colors */
+      --emo-happy: #10b981;
+      --emo-neutral: #818cf8;
+      --emo-surprised: #06b6d4;
+      --emo-sad: #3b82f6;
+      --emo-fearful: #a855f7;
+      --emo-disgusted: #f59e0b;
+      --emo-angry: #f43f5e;
+
+      --active-mood-color: #818cf8;
+      --active-mood-glow: rgba(129, 140, 248, 0.25);
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-pill: 9999px;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text-main);
+    }
+
+    /* ── Mobile Native Shell Container ── */
+    .mobile-app-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+                  radial-gradient(circle at 50% 100%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                  var(--bg-dark);
+      padding: env(safe-area-inset-top, 8px) 12px env(safe-area-inset-bottom, 12px);
+    }
+
+    /* ── Minimalist Mobile Header ── */
+    .app-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px rgba(99, 102, 241, 0.5);
+    }
+
+    .brand-icon svg {
+      width: 18px;
+      height: 18px;
+      color: #fff;
+    }
+
+    .brand-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #fff 40%, #c7d2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-chip {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary-light);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      -webkit-text-fill-color: var(--primary-light);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s;
+    }
+
+    .status-badge.active .status-dot {
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse-ring 1.8s infinite;
+    }
+
+    .status-badge.loading .status-dot {
+      background: #f59e0b;
+      animation: pulse-ring 1s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .icon-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+      color: var(--primary-light);
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ── Main Vertical Content Flow ── */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      overflow: hidden;
+      padding-top: 4px;
+    }
+
+    /* ── 1. Camera Viewport Card ── */
+    .camera-card {
+      position: relative;
+      width: 100%;
+      flex: 0 0 45vh; /* 45% of screen height for camera */
+      max-height: 48vh;
+      min-height: 250px;
+      background: #03060c;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .camera-card.scanning {
+      border-color: var(--active-mood-color);
+      box-shadow: 0 10px 32px -4px var(--active-mood-glow);
+    }
+
+    .viewport-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror Mode Default */
+      transition: transform 0.25s ease;
+    }
+
+    #video.unmirrored {
+      transform: scaleX(1);
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Floating Viewport Overlays */
+    .camera-hud-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 8;
+      pointer-events: none;
+    }
+
+    .hud-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(7, 10, 18, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      backdrop-filter: blur(8px);
+      font-family: 'JetBrains Mono', monospace;
+      pointer-events: auto;
+    }
+
+    .hud-controls-corner {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      z-index: 8;
+    }
+
+    .hud-control-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(7, 10, 18, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+    }
+
+    .hud-control-btn:active {
+      transform: scale(0.92);
+    }
+
+    .hud-control-btn.active {
+      background: rgba(99, 102, 241, 0.35);
+      border-color: var(--primary-light);
+      color: var(--cyan);
+    }
+
+    .hud-control-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* Viewport Idle Placeholder */
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #111827 0%, #05070d 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      text-align: center;
+      z-index: 10;
+      transition: opacity 0.3s ease, visibility 0.3s;
+    }
+
+    .camera-placeholder.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .camera-pulse-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.25);
+    }
+
+    .camera-pulse-icon svg {
+      width: 28px;
+      height: 28px;
+      color: var(--primary-light);
+    }
+
+    .placeholder-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .placeholder-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 240px;
+      line-height: 1.45;
+    }
+
+    /* Camera Loading Spinner */
+    .camera-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 10, 18, 0.88);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 15;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .camera-loading-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mini-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--cyan);
+      border-right-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-status-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── 2. REAL-TIME DETECTED EMOTION CARD (IMMEDIATELY BELOW CAMERA) ── */
+    .emotion-live-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .emotion-live-card::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--active-mood-glow) 0%, transparent 70%);
+      pointer-events: none;
+      transition: background 0.4s ease;
+    }
+
+    /* Dominant Emotion Main Row */
+    .dominant-live-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dominant-left-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .dominant-emoji-bubble {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .dominant-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .dominant-detected-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-dim);
+    }
+
+    .dominant-name-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.3s;
+    }
+
+    /* Confidence Percentage Circular Badge */
+    .confidence-badge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .confidence-score-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--active-mood-color);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .confidence-score-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Live Empathetic Advice Pill */
+    .ai-wellness-pill {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--active-mood-color);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .ai-sparkle-icon {
+      color: var(--active-mood-color);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .ai-wellness-text {
+      font-size: 11px;
+      color: var(--text-main);
+      line-height: 1.35;
+      font-weight: 500;
+    }
+
+    /* ── Compact Horizontal Emotion Spectrum Meter Strip ── */
+    .spectrum-horizontal-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .spectrum-pill-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+
+    .s-pill-emoji {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .s-pill-bar-track {
+      width: 100%;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .s-pill-bar-fill {
+      width: 100%;
+      height: 0%;
+      border-radius: 6px;
+      transition: height 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .s-pill-bar-fill.happy     { background: linear-gradient(0deg, #059669, #10b981); }
+    .s-pill-bar-fill.neutral   { background: linear-gradient(0deg, #4f46e5, #818cf8); }
+    .s-pill-bar-fill.surprised { background: linear-gradient(0deg, #0891b2, #06b6d4); }
+    .s-pill-bar-fill.sad       { background: linear-gradient(0deg, #2563eb, #3b82f6); }
+    .s-pill-bar-fill.fearful   { background: linear-gradient(0deg, #9333ea, #a855f7); }
+    .s-pill-bar-fill.disgusted { background: linear-gradient(0deg, #d97706, #f59e0b); }
+    .s-pill-bar-fill.angry     { background: linear-gradient(0deg, #e11d48, #f43f5e); }
+
+    .s-pill-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-dim);
+      line-height: 1;
+    }
+
+    .spectrum-pill-col.leader .s-pill-pct {
+      color: #fff;
+    }
+    .spectrum-pill-col.leader .s-pill-emoji {
+      transform: scale(1.15);
+    }
+
+    /* ── 3. Bottom Shutter & Action Bar ── */
+    .shutter-action-dock {
+      flex-shrink: 0;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 16px;
+      z-index: 20;
+    }
+
+    /* Shutter Button (Native Camera Style) */
+    .shutter-btn-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shutter-outer-ring {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .shutter-inner-core {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s;
+    }
+
+    .shutter-inner-core svg {
+      width: 22px;
+      height: 22px;
+      color: #fff;
+      transition: transform 0.2s;
+    }
+
+    .shutter-btn-wrap:active .shutter-inner-core {
+      transform: scale(0.88);
+    }
+
+    .shutter-btn-wrap.recording .shutter-outer-ring {
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+
+    .shutter-btn-wrap.recording .shutter-inner-core {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.7);
+      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+    }
+
+    /* Secondary Dock Buttons */
+    .dock-action-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dock-action-btn:active {
+      transform: scale(0.9);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .dock-action-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .dock-action-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ── 4. Slide-Up Stats & Preferences Drawer (Bottom Sheet) ── */
+    .bottom-sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .bottom-sheet-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .bottom-sheet-card {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #0d1322;
+      border-top: 1px solid var(--border-glow);
+      border-radius: 28px 28px 0 0;
+      padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .bottom-sheet-backdrop.open .bottom-sheet-card {
+      transform: translateY(0);
+    }
+
+    .drawer-handle-bar {
+      width: 36px;
+      height: 4px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 auto 4px;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .drawer-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .drawer-stat-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .d-stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .d-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .drawer-setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .setting-label h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .setting-label p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Switch */
+    .toggle-sw {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle-sw input { opacity: 0; width: 0; height: 0; }
+    .sw-slider {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.12);
+      border-radius: 34px;
+      transition: 0.2s;
+    }
+    .sw-slider::before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    input:checked + .sw-slider {
+      background-color: var(--primary);
+    }
+    input:checked + .sw-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* ── Toast Alert ── */
+    .mobile-toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: rgba(14, 20, 36, 0.94);
+      border: 1px solid var(--border-glow);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+    }
+
+    .mobile-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Mobile App Native Shell ── -->
+  <div class="mobile-app-shell">
+
+    <!-- ── Top Header ── -->
+    <header class="app-header">
+      <div class="brand-wrap">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+          </svg>
+        </div>
+        <div class="brand-name">
+          EMOCare
+          <span class="live-chip">Live AI</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-badge" id="statusBadge">
+          <span class="status-dot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+        <button class="icon-btn" id="openDrawerBtn" aria-label="Open Stats & Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main App Content ── -->
+    <main class="app-main">
+
+      <!-- ── 1. Camera Viewfinder Card ── -->
+      <section class="camera-card" id="cameraCard">
+        <div class="viewport-inner" id="viewportInner">
+
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+
+          <!-- Top HUD Chips -->
+          <div class="camera-hud-top">
+            <div class="hud-chip" id="fpsChip">-- FPS</div>
+            <div class="hud-chip" id="faceChip">0 FACES</div>
+          </div>
+
+          <!-- Bottom HUD Quick Overlays -->
+          <div class="hud-controls-corner">
+            <!-- Mirror Toggle -->
+            <button class="hud-control-btn active" id="mirrorToggleBtn" title="Mirror Selfie View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 2v20"/>
+              </svg>
+            </button>
+            <!-- Flip Camera Front/Rear -->
+            <button class="hud-control-btn" id="flipCamBtn" title="Flip Camera Front/Back">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8c0 1.5.4 2.9 1.1 4.1L3 17l4.5-1.1c1.3.7 2.8 1.1 4.5 1.1 4.418 0 8-3.582 8-8z"/>
+                <path d="M16 14l4 4 4-4M8 10l-4-4-4 4"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Idle Viewport Placeholder -->
+          <div class="camera-placeholder" id="cameraPlaceholder">
+            <div class="camera-pulse-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <div class="placeholder-title">Tap Shutter to Start</div>
+            <div class="placeholder-desc">Real-time facial expression telemetry in mirror selfie mode.</div>
+          </div>
+
+          <!-- AI Model Loading Spinner -->
+          <div class="camera-loading-overlay" id="loadingOverlay">
+            <div class="mini-spinner"></div>
+            <span class="loading-status-text" id="loadingStatusText">Loading Neural Models…</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── 2. REAL-TIME DETECTED EMOTION CARD (RIGHT UNDER CAMERA) ── -->
+      <section class="emotion-live-card" id="emotionLiveCard">
+        
+        <!-- Dominant Emotion Spotlight Header -->
+        <div class="dominant-live-row">
+          <div class="dominant-left-group">
+            <div class="dominant-emoji-bubble" id="dominantEmoji">
+              🙂
+            </div>
+            <div class="dominant-meta">
+              <span class="dominant-detected-label">Detected Emotion</span>
+              <div class="dominant-name-text" id="dominantName">Waiting for Face…</div>
+            </div>
+          </div>
+
+          <!-- Live Score Gauge -->
+          <div class="confidence-badge-wrap">
+            <span class="confidence-score-val" id="confidenceScore">0%</span>
+            <span class="confidence-score-label">Confidence</span>
+          </div>
+        </div>
+
+        <!-- Real-Time Empathetic AI Advice -->
+        <div class="ai-wellness-pill" id="aiWellnessPill">
+          <div class="ai-sparkle-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
+            </svg>
+          </div>
+          <p class="ai-wellness-text" id="aiWellnessText">
+            Point your camera at your face to start instant emotion telemetry.
+          </p>
+        </div>
+
+        <!-- Compact 7-Emotion Live Spectrum Strip -->
+        <div class="spectrum-horizontal-strip" id="spectrumHorizontalStrip">
+          <!-- Injected dynamically via JS -->
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ── 3. Bottom Native Shutter Action Bar ── -->
+    <nav class="shutter-action-dock">
+      <!-- Audio Toggle -->
+      <button class="dock-action-btn" id="audioToggleBtn" title="Toggle Sound Alert" aria-label="Toggle Sound">
+        <svg id="audioIconOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <svg id="audioIconOff" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+      </button>
+
+      <!-- Center Large Shutter (Start/Stop) -->
+      <div class="shutter-btn-wrap" id="shutterBtnWrap">
+        <div class="shutter-outer-ring">
+          <div class="shutter-inner-core" id="shutterInnerCore">
+            <svg id="shutterPlayIcon" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 19 12 6 20 6 4"/>
+            </svg>
+            <svg id="shutterStopIcon" style="display:none;" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snapshot Capture Photo -->
+      <button class="dock-action-btn" id="snapshotBtn" disabled title="Capture Snapshot" aria-label="Snapshot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ── 4. Slide-Up Stats & Preferences Drawer (Bottom Sheet) ── -->
+  <div class="bottom-sheet-backdrop" id="bottomSheet">
+    <div class="bottom-sheet-card">
+      <div class="drawer-handle-bar"></div>
+      
+      <div class="drawer-header">
+        <h3 class="drawer-title">Session Telemetry & Settings</h3>
+        <button class="icon-btn" id="closeDrawerBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="drawer-stats-grid">
+        <div class="drawer-stat-item">
+          <span class="d-stat-label">Session</span>
+          <span class="d-stat-val" id="drawerSessionTime">00:00</span>
+        </div>
+        <div class="drawer-stat-item">
+          <span class="d-stat-label">Scans</span>
+          <span class="d-stat-val" id="drawerTotalScans">0</span>
+        </div>
+        <div class="drawer-stat-item">
+          <span class="d-stat-label">Top Mood</span>
+          <span class="d-stat-val" id="drawerPeakMood">—</span>
+        </div>
+      </div>
+
+      <!-- Settings List -->
+      <div class="drawer-setting-row">
+        <div class="setting-label">
+          <h4>Camera Mirror Effect</h4>
+          <p>Flips video feed horizontally like a physical mirror</p>
+        </div>
+        <label class="toggle-sw">
+          <input type="checkbox" id="drawerMirrorToggle" checked />
+          <span class="sw-slider"></span>
+        </label>
+      </div>
+
+      <div class="drawer-setting-row">
+        <div class="setting-label">
+          <h4>Audio Chime Alert</h4>
+          <p>Plays a chime when face is recognized</p>
+        </div>
+        <label class="toggle-sw">
+          <input type="checkbox" id="drawerAudioToggle" checked />
+          <span class="sw-slider"></span>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+        <span style="font-size:11px; color:var(--text-dim);">EMOCare v2.5 • 100% On-Device Neural Processing</span>
+        <button class="icon-btn" id="testSoundDrawerBtn" title="Test Chime">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Floating Toast ── -->
+  <div class="mobile-toast" id="toast">Ready</div>
+
+  <!-- ── TensorFlow & Face-API CDN ── -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <!-- ── Mobile App Script ── -->
+  <script>
+    /* ── DOM Bindings ── */
+    const video = document.getElementById('video');
+    const overlay = document.getElementById('overlay');
+    const cameraCard = document.getElementById('cameraCard');
+    const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingStatusText = document.getElementById('loadingStatusText');
+
+    const shutterBtnWrap = document.getElementById('shutterBtnWrap');
+    const shutterPlayIcon = document.getElementById('shutterPlayIcon');
+    const shutterStopIcon = document.getElementById('shutterStopIcon');
+    const snapshotBtn = document.getElementById('snapshotBtn');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
+    const mirrorToggleBtn = document.getElementById('mirrorToggleBtn');
+    const flipCamBtn = document.getElementById('flipCamBtn');
+
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const fpsChip = document.getElementById('fpsChip');
+    const faceChip = document.getElementById('faceChip');
+
+    /* Real-Time Detected Emotion Card Elements (Directly Below Camera) */
+    const emotionLiveCard = document.getElementById('emotionLiveCard');
+    const dominantEmoji = document.getElementById('dominantEmoji');
+    const dominantName = document.getElementById('dominantName');
+    const confidenceScore = document.getElementById('confidenceScore');
+    const aiWellnessPill = document.getElementById('aiWellnessPill');
+    const aiWellnessText = document.getElementById('aiWellnessText');
+    const spectrumHorizontalStrip = document.getElementById('spectrumHorizontalStrip');
+
+    /* Drawer Elements */
+    const bottomSheet = document.getElementById('bottomSheet');
+    const openDrawerBtn = document.getElementById('openDrawerBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const drawerMirrorToggle = document.getElementById('drawerMirrorToggle');
+    const drawerAudioToggle = document.getElementById('drawerAudioToggle');
+    const drawerSessionTime = document.getElementById('drawerSessionTime');
+    const drawerTotalScans = document.getElementById('drawerTotalScans');
+    const drawerPeakMood = document.getElementById('drawerPeakMood');
+    const testSoundDrawerBtn = document.getElementById('testSoundDrawerBtn');
+
+    const toast = document.getElementById('toast');
+
+    /* ── Emotions Configuration ── */
+    const EMOTIONS = [
+      { key: 'happy', label: 'Happy', emoji: '😊', color: '#10b981' },
+      { key: 'neutral', label: 'Neutral', emoji: '😐', color: '#818cf8' },
+      { key: 'surprised', label: 'Surprised', emoji: '😲', color: '#06b6d4' },
+      { key: 'sad', label: 'Sad', emoji: '😔', color: '#3b82f6' },
+      { key: 'fearful', label: 'Fearful', emoji: '😨', color: '#a855f7' },
+      { key: 'disgusted', label: 'Disgusted', emoji: '🤢', color: '#f59e0b' },
+      { key: 'angry', label: 'Angry', emoji: '😡', color: '#f43f5e' }
+    ];
+
+    const EMOTION_MAP = Object.fromEntries(EMOTIONS.map(e => [e.key, e]));
+
+    const WELLNESS_TIPS = {
+      happy: [
+        "Radiating positive energy! Keep this cheerful vibe alive.",
+        "Your smile releases natural endorphins. Great glow!",
+        "Joyful state! Share your warmth with someone today."
+      ],
+      neutral: [
+        "Calm, centered, and balanced. Optimal focus zone.",
+        "Equilibrium detected. Clear mind for mindful thinking.",
+        "Composed and relaxed. Remember to blink regularly."
+      ],
+      surprised: [
+        "Curiosity or awe detected! A spark for new learning.",
+        "Astonished expression! Take a moment to absorb the wonder."
+      ],
+      sad: [
+        "Feeling down? Take a deep, gentle breath. You matter.",
+        "Rest your eyes and drink some water. Better moments ahead.",
+        "Be kind to yourself right now. You are doing great."
+      ],
+      angry: [
+        "Tension noticed. Inhale 4 seconds, exhale 6 seconds.",
+        "Drop your shoulders and unclench your jaw to release stress.",
+        "Step back and give yourself a calm moment to reset."
+      ],
+      fearful: [
+        "Anxious feeling? Name 3 comforting things around you.",
+        "Ground your feet on the floor. You are safe in this moment.",
+        "Slow your breathing down rhythmically to calm the senses."
+      ],
+      disgusted: [
+        "Displeasure noticed. A breath of fresh air will help.",
+        "Stretch your arms and take a refreshing sip of water."
+      ]
+    };
+
+    /* ── App State ── */
+    let stream = null;
+    let detecting = false;
+    let modelsLoaded = false;
+    let isMirrored = true;
+    let isAudioEnabled = true;
+    let currentFacingMode = 'user'; // 'user' (front) or 'environment' (back)
+    let alertPlayed = false;
+    let rafId = null;
+    let toastTimeout = null;
+
+    /* Metrics & Session State */
+    let sessionStartTime = null;
+    let sessionInterval = null;
+    let totalScans = 0;
+    const moodFrequency = {};
+    EMOTIONS.forEach(e => { moodFrequency[e.key] = 0; });
+
+    /* FPS Calculation */
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    let currentFps = 0;
+
+    /* Audio Chime */
+    const audioObj = new Audio('face_detected.mp3');
+
+    /* ── Build Horizontal Emotion Spectrum Strip ── */
+    function initSpectrumStrip() {
+      spectrumHorizontalStrip.innerHTML = EMOTIONS.map(e => `
+        <div class="spectrum-pill-col" id="col-${e.key}">
+          <span class="s-pill-emoji">${e.emoji}</span>
+          <div class="s-pill-bar-track">
+            <div class="s-pill-bar-fill ${e.key}" id="strip-bar-${e.key}"></div>
+          </div>
+          <span class="s-pill-pct" id="strip-pct-${e.key}">0%</span>
+        </div>
+      `).join('');
+    }
+
+    initSpectrumStrip();
+
+    /* ── Toast Helper ── */
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    /* ── Status Helper ── */
+    function setStatus(state, label) {
+      statusBadge.className = 'status-badge ' + state;
+      statusText.textContent = label;
+    }
+
+    /* ── Sound Handler ── */
+    function playChime() {
+      if (!isAudioEnabled) return;
+      try {
+        if (audioObj && !audioObj.error) {
+          audioObj.currentTime = 0;
+          const p = audioObj.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch(() => playSynthChime());
+          }
+        } else {
+          playSynthChime();
+        }
+      } catch (e) {
+        playSynthChime();
+      }
+    }
+
+    function playSynthChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.16);
+
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+    }
+
+    /* ── Mirror Mode Controls ── */
+    function updateMirrorUI() {
+      if (isMirrored) {
+        video.classList.remove('unmirrored');
+        mirrorToggleBtn.classList.add('active');
+        drawerMirrorToggle.checked = true;
+      } else {
+        video.classList.add('unmirrored');
+        mirrorToggleBtn.classList.remove('active');
+        drawerMirrorToggle.checked = false;
+      }
+    }
+
+    function toggleMirror() {
+      isMirrored = !isMirrored;
+      updateMirrorUI();
+      showToast(isMirrored ? 'Mirror View: ON' : 'Mirror View: OFF');
+    }
+
+    mirrorToggleBtn.onclick = toggleMirror;
+    drawerMirrorToggle.onchange = () => {
+      isMirrored = drawerMirrorToggle.checked;
+      updateMirrorUI();
+    };
+
+    /* ── Audio Toggle Controls ── */
+    function updateAudioUI() {
+      if (isAudioEnabled) {
+        document.getElementById('audioIconOn').style.display = 'block';
+        document.getElementById('audioIconOff').style.display = 'none';
+        drawerAudioToggle.checked = true;
+      } else {
+        document.getElementById('audioIconOn').style.display = 'none';
+        document.getElementById('audioIconOff').style.display = 'block';
+        drawerAudioToggle.checked = false;
+      }
+    }
+
+    audioToggleBtn.onclick = () => {
+      isAudioEnabled = !isAudioEnabled;
+      updateAudioUI();
+      showToast(isAudioEnabled ? 'Chime sound unmuted' : 'Chime sound muted');
+    };
+
+    drawerAudioToggle.onchange = () => {
+      isAudioEnabled = drawerAudioToggle.checked;
+      updateAudioUI();
+    };
+
+    testSoundDrawerBtn.onclick = () => {
+      playChime();
+      showToast('Sound chime tested');
+    };
+
+    /* ── Model Loader ── */
+    async function loadModels() {
+      if (modelsLoaded) return true;
+      loadingOverlay.classList.add('visible');
+      loadingStatusText.textContent = 'Loading AI Models…';
+
+      const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+        ]);
+        modelsLoaded = true;
+        loadingOverlay.classList.remove('visible');
+        return true;
+      } catch (err) {
+        loadingOverlay.classList.remove('visible');
+        setStatus('error', 'Error');
+        showToast('Model load error. Check internet connection.');
+        return false;
+      }
+    }
+
+    /* ── Session Analytics ── */
+    function startSessionClock() {
+      sessionStartTime = Date.now();
+      sessionInterval = setInterval(() => {
+        if (!sessionStartTime) return;
+        const diffSec = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const m = String(Math.floor(diffSec / 60)).padStart(2, '0');
+        const s = String(diffSec % 60).padStart(2, '0');
+        drawerSessionTime.textContent = `${m}:${s}`;
+      }, 1000);
+    }
+
+    function stopSessionClock() {
+      clearInterval(sessionInterval);
+      sessionInterval = null;
+    }
+
+    /* ── Real-Time Emotion UI Updater (Directly Below Camera) ── */
+    let lastWellnessUpdate = 0;
+
+    function updateRealTimeEmotionUI(expressions) {
+      if (!expressions) return;
+
+      const sorted = Object.entries(expressions).sort((a, b) => b[1] - a[1]);
+      const dominantKey = sorted[0][0];
+      const dominantScore = sorted[0][1];
+      const emoObj = EMOTION_MAP[dominantKey] || { label: 'Neutral', emoji: '😐', color: '#818cf8' };
+
+      // Update Theme Color
+      document.documentElement.style.setProperty('--active-mood-color', emoObj.color);
+      document.documentElement.style.setProperty('--active-mood-glow', emoObj.color + '40');
+
+      // Update Dominant Badge
+      dominantEmoji.textContent = emoObj.emoji;
+      dominantName.textContent = emoObj.label;
+      dominantName.style.color = emoObj.color;
+      confidenceScore.textContent = Math.round(dominantScore * 100) + '%';
+      confidenceScore.style.color = emoObj.color;
+
+      // Update Empathetic Wellness Text periodically
+      const now = Date.now();
+      if (now - lastWellnessUpdate > 4000) {
+        const tips = WELLNESS_TIPS[dominantKey] || WELLNESS_TIPS.neutral;
+        aiWellnessText.textContent = tips[Math.floor(Math.random() * tips.length)];
+        lastWellnessUpdate = now;
+      }
+
+      // Update Horizontal Spectrum Bars
+      EMOTIONS.forEach(e => {
+        const val = expressions[e.key] || 0;
+        const pct = Math.round(val * 100);
+        const bar = document.getElementById('strip-bar-' + e.key);
+        const pctText = document.getElementById('strip-pct-' + e.key);
+        const col = document.getElementById('col-' + e.key);
+
+        if (bar) bar.style.height = pct + '%';
+        if (pctText) pctText.textContent = pct + '%';
+        if (col) col.classList.toggle('leader', e.key === dominantKey);
+      });
+
+      // Update Stats
+      totalScans++;
+      drawerTotalScans.textContent = totalScans;
+      moodFrequency[dominantKey] = (moodFrequency[dominantKey] || 0) + 1;
+
+      let topKey = 'neutral';
+      let maxCnt = 0;
+      for (const [k, v] of Object.entries(moodFrequency)) {
+        if (v > maxCnt) { maxCnt = v; topKey = k; }
+      }
+      drawerPeakMood.textContent = EMOTION_MAP[topKey] ? `${EMOTION_MAP[topKey].emoji} ${EMOTION_MAP[topKey].label}` : topKey;
+    }
+
+    function resetEmotionUI() {
+      document.documentElement.style.setProperty('--active-mood-color', '#818cf8');
+      document.documentElement.style.setProperty('--active-mood-glow', 'rgba(129, 140, 248, 0.25)');
+
+      dominantEmoji.textContent = '🙂';
+      dominantName.textContent = 'Scanning for Face…';
+      dominantName.style.color = '#fff';
+      confidenceScore.textContent = '0%';
+      confidenceScore.style.color = 'var(--text-muted)';
+      aiWellnessText.textContent = 'Point your camera at your face to start instant emotion telemetry.';
+
+      EMOTIONS.forEach(e => {
+        const bar = document.getElementById('strip-bar-' + e.key);
+        const pctText = document.getElementById('strip-pct-' + e.key);
+        const col = document.getElementById('col-' + e.key);
+
+        if (bar) bar.style.height = '0%';
+        if (pctText) pctText.textContent = '0%';
+        if (col) col.classList.remove('leader');
+      });
+    }
+
+    /* ── Drawing Futuristic Brackets & Clean Labels on Mirrored Video ── */
+    function drawReticle(ctx, x, y, width, height, color) {
+      const len = Math.min(width, height) * 0.22;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(x + width - len, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + len);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + height - len); ctx.lineTo(x, y + height); ctx.lineTo(x + len, y + height);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(x + width - len, y + height); ctx.lineTo(x + width, y + height); ctx.lineTo(x + width, y + height - len);
+      ctx.stroke();
+    }
+
+    function drawBadge(ctx, text, emoji, x, y, width, height, color) {
+      ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+      const textW = ctx.measureText(text).width;
+      const bw = textW + 30;
+      const bh = 24;
+
+      const bx = x;
+      const by = y > 30 ? y - 8 : y + height + 28;
+
+      ctx.fillStyle = 'rgba(7, 10, 18, 0.9)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(bx, by - bh, bw, bh, 6);
+      else ctx.rect(bx, by - bh, bw, bh);
+      ctx.fill();
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = '12px sans-serif';
+      ctx.fillText(emoji, bx + 6, by - 7);
+
+      ctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(text, bx + 23, by - 7);
+    }
+
+    /* ── Neural Detection Loop ── */
+    async function runDetection() {
+      if (!detecting || !video.srcObject) return;
+
+      const ctx = overlay.getContext('2d');
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+      // FPS tracking
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFpsTime >= 1000) {
+        currentFps = Math.round((frameCount * 1000) / (now - lastFpsTime));
+        fpsChip.textContent = `${currentFps} FPS`;
+        frameCount = 0;
+        lastFpsTime = now;
+      }
+
+      try {
+        const options = new faceapi.TinyFaceDetectorOptions({
+          inputSize: 224,
+          scoreThreshold: 0.4
+        });
+
+        const results = await faceapi.detectAllFaces(video, options).withFaceExpressions();
+        if (!detecting) return;
+
+        const resized = faceapi.resizeResults(results, {
+          width: overlay.width,
+          height: overlay.height
+        });
+
+        const count = resized.length;
+        faceChip.textContent = `${count} ${count === 1 ? 'FACE' : 'FACES'}`;
+
+        if (count > 0) {
+          if (!alertPlayed) {
+            alertPlayed = true;
+            playChime();
+          }
+
+          resized.forEach((res, i) => {
+            const { x, y, width, height } = res.detection.box;
+
+            // Mathematical flip coordinates for mirror mode
+            const drawX = isMirrored ? (overlay.width - (x + width)) : x;
+
+            const sorted = Object.entries(res.expressions).sort((a, b) => b[1] - a[1]);
+            const topKey = sorted[0][0];
+            const topVal = sorted[0][1];
+            const emoObj = EMOTION_MAP[topKey] || { label: 'Neutral', emoji: '😐', color: '#818cf8' };
+
+            // Draw bounding rect
+            ctx.strokeStyle = emoObj.color + '44';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(drawX, y, width, height);
+
+            // Draw Cyber Brackets
+            drawReticle(ctx, drawX, y, width, height, emoObj.color);
+
+            // Draw Readable Badge
+            const labelStr = `${emoObj.label.toUpperCase()} ${Math.round(topVal * 100)}%`;
+            drawBadge(ctx, labelStr, emoObj.emoji, drawX, y, width, height, emoObj.color);
+
+            // Feed dominant face to the card directly underneath
+            if (i === 0) {
+              updateRealTimeEmotionUI(res.expressions);
+            }
+          });
+
+        } else {
+          alertPlayed = false;
+          resetEmotionUI();
+        }
+
+      } catch (err) {}
+
+      if (detecting) {
+        rafId = requestAnimationFrame(runDetection);
+      }
+    }
+
+    /* ── Camera Start / Stop Lifecycle ── */
+    async function startCamera() {
+      setStatus('loading', 'Starting…');
+
+      const ok = await loadModels();
+      if (!ok) return;
+
+      loadingOverlay.classList.add('visible');
+      loadingStatusText.textContent = 'Accessing Camera…';
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 720 },
+            height: { ideal: 960 }
+          },
+          audio: false
+        };
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = stream;
+
+        await new Promise(res => { video.onloadedmetadata = res; });
+        await video.play();
+
+        overlay.width = video.videoWidth || 480;
+        overlay.height = video.videoHeight || 640;
+
+        loadingOverlay.classList.remove('visible');
+        cameraPlaceholder.classList.add('hidden');
+        cameraCard.classList.add('scanning');
+
+        detecting = true;
+        snapshotBtn.disabled = false;
+
+        shutterBtnWrap.classList.add('recording');
+        shutterPlayIcon.style.display = 'none';
+        shutterStopIcon.style.display = 'block';
+
+        setStatus('active', 'Live AI');
+        startSessionClock();
+        runDetection();
+        showToast('EMOCare Active');
+
+      } catch (err) {
+        loadingOverlay.classList.remove('visible');
+        setStatus('error', 'Camera Error');
+        if (err.name === 'NotAllowedError') {
+          showToast('Camera permission denied');
+        } else {
+          showToast('Camera error: ' + err.message);
+        }
+      }
+    }
+
+    function stopCamera() {
+      detecting = false;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        video.srcObject = null;
+      }
+
+      const ctx = overlay.getContext('2d');
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+      cameraPlaceholder.classList.remove('hidden');
+      cameraCard.classList.remove('scanning');
+      fpsChip.textContent = '-- FPS';
+      faceChip.textContent = '0 FACES';
+
+      resetEmotionUI();
+      stopSessionClock();
+
+      snapshotBtn.disabled = true;
+      shutterBtnWrap.classList.remove('recording');
+      shutterPlayIcon.style.display = 'block';
+      shutterStopIcon.style.display = 'none';
+
+      alertPlayed = false;
+      setStatus('', 'Ready');
+      showToast('Camera Paused');
+    }
+
+    shutterBtnWrap.onclick = () => {
+      if (detecting) stopCamera();
+      else startCamera();
+    };
+
+    /* ── Flip Camera (Front / Rear) ── */
+    async function flipCamera() {
+      currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+      isMirrored = (currentFacingMode === 'user');
+      updateMirrorUI();
+
+      if (detecting) {
+        stopCamera();
+        await startCamera();
+      }
+      showToast(currentFacingMode === 'user' ? 'Front Camera' : 'Rear Camera');
+    }
+
+    flipCamBtn.onclick = flipCamera;
+
+    /* ── High-Res Snapshot Capture ── */
+    function captureSnapshot() {
+      if (!detecting || !video.srcObject) return;
+
+      const snap = document.createElement('canvas');
+      snap.width = video.videoWidth || 720;
+      snap.height = video.videoHeight || 960;
+      const sCtx = snap.getContext('2d');
+
+      if (isMirrored) {
+        sCtx.save();
+        sCtx.translate(snap.width, 0);
+        sCtx.scale(-1, 1);
+        sCtx.drawImage(video, 0, 0, snap.width, snap.height);
+        sCtx.restore();
+      } else {
+        sCtx.drawImage(video, 0, 0, snap.width, snap.height);
+      }
+
+      sCtx.drawImage(overlay, 0, 0, snap.width, snap.height);
+
+      // Watermark Branding Pill
+      sCtx.fillStyle = 'rgba(7, 10, 18, 0.85)';
+      sCtx.fillRect(16, snap.height - 54, 280, 38);
+      sCtx.strokeStyle = 'rgba(99, 102, 241, 0.5)';
+      sCtx.lineWidth = 1;
+      sCtx.strokeRect(16, snap.height - 54, 280, 38);
+
+      sCtx.fillStyle = '#fff';
+      sCtx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+      sCtx.fillText('EMOCare Live AI', 30, snap.height - 30);
+
+      sCtx.fillStyle = '#94a3b8';
+      sCtx.font = '11px "JetBrains Mono", monospace';
+      sCtx.fillText(new Date().toLocaleTimeString(), 180, snap.height - 30);
+
+      const link = document.createElement('a');
+      link.href = snap.toDataURL('image/png');
+      link.download = `EMOCare_Snap_${Date.now()}.png`;
+      link.click();
+
+      showToast('Snapshot Saved!');
+    }
+
+    snapshotBtn.onclick = captureSnapshot;
+
+    /* ── Slide-Up Bottom Sheet Handlers ── */
+    openDrawerBtn.onclick = () => {
+      bottomSheet.classList.add('open');
+    };
+
+    closeDrawerBtn.onclick = () => {
+      bottomSheet.classList.remove('open');
+    };
+
+    bottomSheet.onclick = (e) => {
+      if (e.target === bottomSheet) {
+        bottomSheet.classList.remove('open');
+      }
+    };
+  </script>
+</body>
+</html>
